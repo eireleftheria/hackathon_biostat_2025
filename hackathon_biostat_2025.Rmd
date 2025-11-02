@@ -571,7 +571,6 @@ print(t_test_d1_d2)
 
 md_d1_d2 =  mean_d1 - mean_d2
 md_d1_d2
-
 ```
 ## Интерпретация результатов
 
