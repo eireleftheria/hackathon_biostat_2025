@@ -143,7 +143,7 @@ pm_sex
 
 # pm_country <- ggpairs(corr_data, mapping = aes(color = country, alpha = 0.8))
 # 
-pm_treat <- ggpairs(corr_data, mapping = aes(color = treat, alpha = 0.8))
+# pm_treat <- ggpairs(corr_data, mapping = aes(color = treat, alpha = 0.8))
 
 # pm <- ggpairs(corr_data, columns = c(1, 2, 4 ,5, 6,8))
 
@@ -174,23 +174,18 @@ num_corr <- corr_data %>%
   group_by(sex) %>% 
   psych::corr.test(method = "spearman")
 
-ggcorrplot(
-  num_corr$r,
-  hc.order = TRUE,
-  type = "lower",
-  p.mat = num_corr$p,
-  sig.level = 0.05,
-  lab = TRUE
-)
-
-
-lm(CrohnD$nrAdvE ~ CrohnD$sex)
 
 ```
 
 4. Выбрать и реализовать методы однофакторного анализа для количественной оценки взаимосвязи между числом НЯ и собранными признаками пациентов (помните, что взаимосвязь - это не только p-значения, но и доверительные интервалы!).
 ```{r}
 
+```
+
+
+
+```{r}
+glm(nrAdvE ~ sex+treat+country+BMI, family = poisson, data = corr_data)
 ```
 
 
