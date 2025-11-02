@@ -12,18 +12,18 @@ library(flextable)
 CrohnD <- read.csv("data/CrohnD.csv")
 ```
 
-1. Сформировать таблицы с базовыми описательными статистиками.
+<h1 style="text-align: center;">Таблицы с базовыми описательными статистиками</h1>
 
-Количественные переменные
-```{r}
+<h2 style="text-align: center;">Количественные переменные</h2>
+```{r, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
 
-final_table <- CrohnD %>% 
+num_table <- CrohnD %>% 
   summarise(
     .by = treat,
-    across(where(is.numeric) & !c(rownames, ID), 
+    across(c(nrAdvE, age, BMI, weight, height) & !c(rownames, ID), 
            list(
              N = ~sum(!is.na(.x)) %>% as.character(),
-             Пропущено = ~sum(is.na(.x)) %>% as.character(),
+             `NA` = ~sum(is.na(.x)) %>% as.character(),
              Среднее = ~ifelse(sum(!is.na(.x)) == 0, "Н/Д", round(mean(.x, na.rm = TRUE), 2) %>% as.character()),
              `Ст. отклон.` = ~ifelse(sum(!is.na(.x)) < 2, "Н/Д", round(sd(.x, na.rm = TRUE), 2) %>% as.character()),
              `Мин - Макс` = ~ifelse(sum(!is.na(.x)) == 0, "Н/Д", paste0(round(min(.x, na.rm = TRUE), 2), " - ", round(max(.x, na.rm = TRUE), 2))),
@@ -33,74 +33,103 @@ final_table <- CrohnD %>%
     )
   ) %>% 
   pivot_longer(!treat, names_to = c("Переменная", "Статистика"), names_sep = "_") %>% 
-  pivot_wider(names_from = "Статистика", values_from = "value")
+  pivot_wider(names_from = "Статистика", values_from = "value") %>%
+  mutate(
+    Переменная = case_when(
+      Переменная == "nrAdvE" ~ "Нежелательные явления",
+      Переменная == "BMI" ~ "ИМТ",
+      Переменная == "height" ~ "Рост",
+      Переменная == "age" ~ "Возраст",
+      Переменная == "weight" ~ "Вес",
+      TRUE ~ Переменная
+    ),
+    treat = case_when(
+      treat == "placebo" ~ "Плацебо",
+      treat == "d1" ~ "Препарат 1",
+      treat == "d2" ~ "Препарат 2",
+      TRUE ~ treat
+    )
+  ) %>%
+  rename(Препарат = treat)
 
-ft <- flextable(final_table) %>%
-  merge_v(j = "treat") %>%
-  fontsize(size = 9) %>%
+ft_num <- flextable(num_table) %>%
+  merge_v(j = 1) %>% 
+  fontsize(size = 10) %>%
   bold(part = "header") %>%
-  align(align = "center", part = "header") %>%
-  align(align = "center", part = "body") %>%
-  align(j = "Переменная", align = "left") %>%
-  theme_vanilla() %>%
+  align(j = 1:2, align = "left", part = "all") %>%  
+  align(j = 3:9, align = "center", part = "all") %>%  
   border_outer() %>%
   border_inner_h() %>%
+  border_inner_v() %>%
   set_table_properties(layout = "autofit") %>%
-  set_caption("Описательная статистика по группам лечения") %>%
-  bg(part = "header", bg = "#E6E6E6")
+  bg(part = "header", bg = "pink") 
 
-ft
+ft_num
 ```
 
-Категориальные переменные
+<h2 style="text-align: center;">Категориальные переменные</h2>
 
-```{r}
-
-cat_table_simple <- CrohnD %>% 
+```{r, echo=FALSE, error=FALSE, warning=FALSE, message=FALSE}
+cat_table <- CrohnD %>% 
   summarise(
     .by = treat,
-    across(c(country, sex), 
-           list(
-             N = ~sum(!is.na(.x)) %>% as.character(),
-             Пропущено = ~sum(is.na(.x)) %>% as.character(),
-             c1 = ~sum(.x == "c1", na.rm = TRUE) %>% as.character(),
-             `c1, %` = ~ifelse(sum(!is.na(.x)) == 0, "Н/Д", 
-                             round(sum(.x == "c1", na.rm = TRUE) / sum(!is.na(.x)) * 100, 1) %>% paste0("%")),
-             c2 = ~sum(.x == "c2", na.rm = TRUE) %>% as.character(),
-             `c2, %` = ~ifelse(sum(!is.na(.x)) == 0, "Н/Д", 
-                             round(sum(.x == "c2", na.rm = TRUE) / sum(!is.na(.x)) * 100, 1) %>% paste0("%"))
-           )
-    ),
-    across(c(sex), 
-           list(
-             F = ~sum(.x == "F", na.rm = TRUE) %>% as.character(),
-             `F, %` = ~ifelse(sum(!is.na(.x)) == 0, "Н/Д", 
-                            round(sum(.x == "F", na.rm = TRUE) / sum(!is.na(.x)) * 100, 1) %>% paste0("%")),
-             M = ~sum(.x == "M", na.rm = TRUE) %>% as.character(),
-             `M, %` = ~ifelse(sum(!is.na(.x)) == 0, "Н/Д", 
-                            round(sum(.x == "M", na.rm = TRUE) / sum(!is.na(.x)) * 100, 1) %>% paste0("%"))
-           )
-    )
+    country_c1_n = sum(country == "c1", na.rm = TRUE) %>% as.character(),
+    country_c1_p = ifelse(sum(!is.na(country)) == 0, "Н/Д", 
+                         round(sum(country == "c1", na.rm = TRUE) / sum(!is.na(country)) * 100, 1) %>% paste0("%")),
+    country_c2_n = sum(country == "c2", na.rm = TRUE) %>% as.character(),
+    country_c2_p = ifelse(sum(!is.na(country)) == 0, "Н/Д", 
+                         round(sum(country == "c2", na.rm = TRUE) / sum(!is.na(country)) * 100, 1) %>% paste0("%")),
+    sex_F_n = sum(sex == "F", na.rm = TRUE) %>% as.character(),
+    sex_F_p = ifelse(sum(!is.na(sex)) == 0, "Н/Д", 
+                    round(sum(sex == "F", na.rm = TRUE) / sum(!is.na(sex)) * 100, 1) %>% paste0("%")),
+    sex_M_n = sum(sex == "M", na.rm = TRUE) %>% as.character(),
+    sex_M_p = ifelse(sum(!is.na(sex)) == 0, "Н/Д", 
+                    round(sum(sex == "M", na.rm = TRUE) / sum(!is.na(sex)) * 100, 1) %>% paste0("%"))
   ) %>% 
-  pivot_longer(!treat, names_to = c("Переменная", "Статистика"), names_sep = "_") %>% 
-  pivot_wider(names_from = "Статистика", values_from = "value")
+  pivot_longer(!treat, names_to = "variable", values_to = "value") %>%
+  separate(variable, into = c("Переменная", "Уровень", "Тип"), sep = "_") %>%
+  pivot_wider(names_from = "Тип", values_from = "value") %>%
+  mutate(
+    Переменная = case_when(
+      Переменная == "country" ~ "Страна",
+      Переменная == "sex" ~ "Пол",
+      TRUE ~ Переменная
+    ),
+    Уровень = case_when(
+      Уровень == "c1" ~ "Страна 1",
+      Уровень == "c2" ~ "Страна 2", 
+      Уровень == "F" ~ "Женщины",
+      Уровень == "M" ~ "Мужчины",
+      TRUE ~ Уровень
+    ),
+    treat = case_when(
+      treat == "placebo" ~ "Плацебо",
+      treat == "d1" ~ "Препарат 1",
+      treat == "d2" ~ "Препарат 2",
+      TRUE ~ treat
+    )
+  ) %>%
+  rename(
+    Препарат = treat,
+    `Количество` = n,
+    `%` = p
+  ) %>%
+  select(Препарат, Переменная, Уровень, `Количество`, `%`)
 
-
-ft_cat_simple <- flextable(cat_table_simple) %>%
-  merge_v(j = "treat") %>%
-  fontsize(size = 9) %>%
+ft_cat <- flextable(cat_table) %>%
+  merge_v(j = "Препарат") %>%
+  merge_v(j = "Переменная") %>%
+  fontsize(size = 10) %>%
   bold(part = "header") %>%
-  align(align = "center", part = "header") %>%
-  align(align = "center", part = "body") %>%
-  align(j = "Переменная", align = "left") %>%
-  theme_vanilla() %>%
+  align(j = 1:3, align = "left", part = "all") %>%  
+  align(j = 4:5, align = "center", part = "all") %>%  
   border_outer() %>%
   border_inner_h() %>%
+  border_inner_v() %>%
   set_table_properties(layout = "autofit") %>%
-  set_caption("Описательная статистика категориальных переменных по группам лечения") %>%
-  bg(part = "header", bg = "#E6E6E6")
+  bg(part = "header", bg = "pink")
 
-ft_cat_simple
+ft_cat
 ```
 
 
