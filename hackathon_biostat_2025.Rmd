@@ -375,12 +375,27 @@ CrohnD %>%
     treat = factor(treat)
   ) -> corr_data
 
-ggpairs(
+pm<-  ggpairs(
   data = corr_data,
   progress = FALSE,
   upper = list(continuous = wrap("cor", method = "spearman"))
-) +
+) + 
   theme_bw()
+
+pm_sex<-  ggpairs(
+  data = corr_data,
+  mapping = aes(color = sex, alpha = 0.8),
+  progress = FALSE,
+  upper = list(continuous = wrap("cor", method = "spearman"))
+) + 
+  theme_bw()
+
+
+# pm_country <- ggpairs(corr_data, mapping = aes(color = country, alpha = 0.8))
+# 
+# pm_treat <- ggpairs(corr_data, mapping = aes(color = treat, alpha = 0.8))
+
+# pm <- ggpairs(corr_data, columns = c(1, 2, 4 ,5, 6,8))
 
 # пол
 p1 <- ggplot(corr_data, aes(x = sex, y = nrAdvE)) +
@@ -404,23 +419,15 @@ p3 <- ggplot(corr_data, aes(x = country, y = nrAdvE)) +
   labs(title = "Число НЯ по стране")
 
 p1+p2+p3
-# num_corr <- corr_data %>%
-#   select(where(is.numeric)) %>%
-#   psych::corr.test(method = "spearman")
-# 
-# ggcorrplot(
-#   num_corr$r,
-#   hc.order = TRUE,
-#   type = "lower",
-#   p.mat = num_corr$p,
-#   sig.level = 0.05,
-#   lab = TRUE
-# )
+num_corr <- corr_data %>%
+  select(where(is.numeric)) %>%
+  group_by(sex) %>% 
+  psych::corr.test(method = "spearman")
+
+pm
+pm_sex
 
 
-
-str(CrohnD)
-describe(CrohnD)
 ```
 
 4.  Выбрать и реализовать методы однофакторного анализа для количественной оценки взаимосвязи между числом НЯ и собранными признаками пациентов (помните, что взаимосвязь - это не только p-значения, но и доверительные интервалы!).
@@ -576,7 +583,14 @@ print(t_test_d1_d2)
 
 md_d1_d2 =  mean_d1 - mean_d2
 md_d1_d2
+
+# Регрессионная GLM модель из статьи
+
+glm(nrAdvE ~ sex+treat+country+BMI, family = poisson, data = corr_data)
+
 ```
+
+
 ## Интерпретация результатов
 
 1. **Статистическая значимость**: p-value = 0.3207 > 0,05 свидетельствует о статистически незначимом различии между группами, разделенными по полу, стране и терапии.
