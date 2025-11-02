@@ -22,8 +22,65 @@ CrohnD <- read.csv("data/CrohnD.csv")
 ```
 
 3. Подобрать и реализовать средства для визуальной оценки взаимосвязи между числом НЯ и собранными признаками пациентов.
-```{r}
+```{r fig.height=8, fig.width=13}
+library(psych)
+library(GGally)
+library(patchwork)
 
+CrohnD %>% 
+  select(-rownames, -ID) %>% 
+  mutate(
+    sex = factor(sex),
+    country = factor(country),
+    treat = factor(treat)
+  ) -> corr_data
+
+ggpairs(
+  data = corr_data,
+  progress = FALSE,
+  upper = list(continuous = wrap("cor", method = "spearman"))
+) +
+  theme_bw()
+
+# пол
+p1 <- ggplot(corr_data, aes(x = sex, y = nrAdvE)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1, alpha = 0.4) +
+  theme_bw() +
+  labs(title = "Число НЯ по полу")
+
+# лечение
+p2 <- ggplot(corr_data, aes(x = treat, y = nrAdvE)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1, alpha = 0.4) +
+  theme_bw() +
+  labs(title = "Число НЯ по лечению")
+
+# страна
+p3 <- ggplot(corr_data, aes(x = country, y = nrAdvE)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1, alpha = 0.4) +
+  theme_bw() +
+  labs(title = "Число НЯ по стране")
+
+p1+p2+p3
+# num_corr <- corr_data %>%
+#   select(where(is.numeric)) %>%
+#   psych::corr.test(method = "spearman")
+# 
+# ggcorrplot(
+#   num_corr$r,
+#   hc.order = TRUE,
+#   type = "lower",
+#   p.mat = num_corr$p,
+#   sig.level = 0.05,
+#   lab = TRUE
+# )
+
+
+
+str(CrohnD)
+describe(CrohnD)
 ```
 
 4. Выбрать и реализовать методы однофакторного анализа для количественной оценки взаимосвязи между числом НЯ и собранными признаками пациентов (помните, что взаимосвязь - это не только p-значения, но и доверительные интервалы!).
