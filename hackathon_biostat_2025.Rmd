@@ -185,6 +185,15 @@ num_corr <- corr_data %>%
 
 
 ```{r}
+AdvE_factor <- corr_data %>% 
+  mutate(nrAdvE = if_else(nrAdvE > 0, 1, 0))
+
+tab <- table(AdvE_factor$treat, AdvE_factor$nrAdvE)
+tab
+chisq.test(tab)
+
+
+
 glm(nrAdvE ~ sex+treat+country+BMI, family = poisson, data = corr_data)
 ```
 
