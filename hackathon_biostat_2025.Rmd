@@ -55,6 +55,7 @@ ft
 Категориальные переменные
 
 ```{r}
+library(patchwork)
 
 cat_table_simple <- CrohnD %>% 
   summarise(
@@ -106,81 +107,232 @@ ft_cat_simple
 
 2. Визуализировать распределения значений признаков средствами ggplot2 и сопутствующих пакетов.
 ```{r}
-
+theme_custom <-
+  theme(
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20, margin = margin(t = 15, unit = "pt")),
+        axis.title.x = element_text(size = 24),
+        axis.title.y = element_text(size = 24),
+        panel.background = element_rect(fill = "#f8f9fa"),
+        legend.text = element_text(size=18),
+        legend.title = element_text(size=22),
+        plot.title = element_text(size=28)
+  )
 ```
 
-3. Подобрать и реализовать средства для визуальной оценки взаимосвязи между числом НЯ и собранными признаками пациентов.
-```{r fig.height=8, fig.width=13}
-library(psych)
-library(GGally)
-library(patchwork)
-
-CrohnD %>% 
-  select(-rownames, -ID) %>% 
-  mutate(
-    sex = factor(sex),
-    country = factor(country),
-    treat = factor(treat)
-  ) -> corr_data
-
-ggpairs(
-  data = corr_data,
-  progress = FALSE,
-  upper = list(continuous = wrap("cor", method = "spearman"))
-) +
-  theme_bw()
-
-# пол
-p1 <- ggplot(corr_data, aes(x = sex, y = nrAdvE)) +
-  geom_boxplot() +
-  geom_jitter(width = 0.1, alpha = 0.4) +
-  theme_bw() +
-  labs(title = "Число НЯ по полу")
-
-# лечение
-p2 <- ggplot(corr_data, aes(x = treat, y = nrAdvE)) +
-  geom_boxplot() +
-  geom_jitter(width = 0.1, alpha = 0.4) +
-  theme_bw() +
-  labs(title = "Число НЯ по лечению")
-
-# страна
-p3 <- ggplot(corr_data, aes(x = country, y = nrAdvE)) +
-  geom_boxplot() +
-  geom_jitter(width = 0.1, alpha = 0.4) +
-  theme_bw() +
-  labs(title = "Число НЯ по стране")
-
-p1+p2+p3
-# num_corr <- corr_data %>%
-#   select(where(is.numeric)) %>%
-#   psych::corr.test(method = "spearman")
-# 
-# ggcorrplot(
-#   num_corr$r,
-#   hc.order = TRUE,
-#   type = "lower",
-#   p.mat = num_corr$p,
-#   sig.level = 0.05,
-#   lab = TRUE
-# )
-
-
-
-str(CrohnD)
-describe(CrohnD)
+```{r BMI_AE,  fig.width=16, fig.height=9}
+# p1 <- CrohnD %>% 
+#   select(nrAdvE, BMI) %>% 
+#   ggplot(aes(x = BMI, y = nrAdvE)) +
+#   geom_jitter(aes(colour = BMI), size = 2) +
+#   theme_custom+
+#   labs(x = "Индекс массы тела", y = "Количество НЯ")+
+#   scale_color_continuous(name="ИМТ")
 ```
 
-4. Выбрать и реализовать методы однофакторного анализа для количественной оценки взаимосвязи между числом НЯ и собранными признаками пациентов (помните, что взаимосвязь - это не только p-значения, но и доверительные интервалы!).
+```{r height_AE,  fig.width=16, fig.height=9}
+# p2 <- CrohnD %>% 
+#   select(nrAdvE, height) %>% 
+#   ggplot(aes(x = height, y = nrAdvE)) +
+#   geom_jitter(aes(colour = height), , size = 2) +
+#   theme_custom+
+#   labs(x = "Рост, см", y = "Количество НЯ")+
+#   scale_color_continuous(name="Рост, см")
+```
+
+```{r country_AE,  fig.width=16, fig.height=9}
+# p3 <- CrohnD %>% 
+#   select(nrAdvE, country) %>% 
+#   ggplot() +
+#   geom_bar(aes(y = nrAdvE, fill = country)) +
+#   theme_custom+
+#   labs(x = "Количество пациентов", y = "Количество НЯ") +
+#   scale_fill_manual(
+#     name = "Страна",
+#     labels = c(
+#       "c1" = "Страна 1",
+#       "c2" = "Страна 2"
+#     ),
+#     values = c(
+#       "c1" = "#0a9396",
+#       "c2" = "#ee9b00" 
+#     ))
+```
+
+```{r, fig.width=12, fig.height=9}
+# p4 <- CrohnD %>% 
+#   select(nrAdvE, sex) %>% 
+#   ggplot() +
+#   geom_violin(aes(x = sex, y = nrAdvE, fill = sex), alpha = 0.5)+
+#   geom_boxplot(aes(x = sex, y = nrAdvE), width = 0.1, color = "grey", alpha = 0.5)+
+#   labs(x = "Пол", y = "Количество НЯ")+
+#   scale_fill_manual(
+#     name = "Пол",
+#     labels = c(
+#       "F" = "Ж",
+#       "M" = "М"
+#     ),
+#     values = c(
+#       "M" = "#6930c3",
+#       "F" = "#f15bb5" 
+#     ))+
+#   theme_custom+
+#   scale_x_discrete(labels = c(
+#       "F" = "Ж",
+#       "M" = "М"
+#     ))
+#   #scale_color_continuous(name="ИМТ")
+```
+
+```{r, fig.width=16, fig.height=12}
+#(p1+p2)/(p3+p4)
+```
+
+```{r hist_AE, fig.width=16, fig.height=6}
+p5 <- CrohnD %>% 
+  select(nrAdvE) %>% 
+  ggplot() +
+  geom_bar(aes(x = nrAdvE), fill = "#e07a5f") +
+  theme_custom+
+  labs(y = "Количество пациентов", x = "Количество НЯ", title = "Распределение количества НЯ")
+```
+
+```{r hist_height, fig.width=16, fig.height=6}
+p6 <- CrohnD %>% 
+  select(height) %>% 
+  ggplot() +
+  geom_bar(aes(x = height), fill = "#81B29A") +
+  theme_custom+
+  scale_y_continuous(breaks = seq(0, 12, by = 2))+
+  scale_x_continuous(breaks = seq(100, 200, by = 10))+
+  labs(y = "Количество пациентов", x = "Рост, см", title = "Распределение по росту")
+```
+
+```{r hist_country, fig.width=6, fig.height=12}
+p7 <- CrohnD %>% 
+  select(country) %>% 
+  ggplot() +
+  geom_bar(aes(x = country), width = 0.4, fill = "#F2CC8F") +
+  theme_custom+
+  scale_y_continuous(limits=c(0,100), breaks = seq(0, 100, by = 10))+
+  labs(y = "Количество пациентов", x = "Страна", title = "Распределение по стране")+
+  scale_x_discrete(labels = c(
+      "c1" = "Страна 1",
+      "c2" = "Страна 2"
+    ))
+```
+
+```{r hist_sex, fig.width=6, fig.height=12}
+p8 <- CrohnD %>% 
+  select(sex) %>% 
+  ggplot() +
+  geom_bar(aes(x = sex, fill = as.factor(sex)), width = 0.4) +
+  scale_y_continuous(breaks = seq(0, 100, by = 10))+
+  theme_custom+
+  labs(y = "Количество пациентов", x = "Пол", title = "Распределение по полу")+
+    scale_fill_manual(
+    name = "Пол",
+    labels = c(
+      "F" = "Ж",
+      "M" = "М"
+    ),
+    values = c(
+      "M" = "#4A5899",
+      "F" = "#FFC4EB" 
+    ))+
+  scale_x_discrete(labels = c(
+      "F" = "Ж",
+      "M" = "М"
+    ))  
+```
+
+```{r hist_age, fig.width=16, fig.height=6}
+p9 <- CrohnD %>% 
+  select(age) %>% 
+  ggplot() +
+  geom_bar(aes(x = age), fill = "#76D0AF") +
+  theme_custom+
+  scale_x_continuous(breaks = seq(0, 100, by = 10))+
+  scale_y_continuous(breaks = seq(0, 10, by = 2))+
+  labs(y = "Количество пациентов", x = "Возраст, лет", title = "Распределение по возрасту")
+```
+
+```{r hist_weight, fig.width=16, fig.height=6}
+p10 <- CrohnD %>% 
+  select(weight) %>% 
+  ggplot() +
+  geom_bar(aes(x = weight), fill = "#99D6FF") +
+  theme_custom+
+  scale_x_continuous(breaks = seq(0, 120, by = 10))+
+  labs(y = "Количество пациентов", x = "Вес, кг", title = "Распределение по весу")
+```
+
+```{r, fig.width=16, fig.height=9}
+p11 <- CrohnD %>% 
+  select(treat) %>% 
+  ggplot() +
+  geom_bar(aes(x = treat, fill = as.factor(treat)), width = 0.4) +
+  scale_y_continuous(breaks = seq(0, 40, by = 5))+
+  theme_custom+
+  labs(y = "Количество пациентов", x = "Группа", title = "Распределение по группе лечения")+
+    scale_fill_manual(
+    name = "Группа",
+    labels = c(
+      "d1" = "Препарат 1",
+      "d2" = "Препарат 2",
+      "placebo" = "Плацебо"
+    ),
+    values = c(
+      "d1" = "#2274A5",
+      "d2" = "#E07A5F",
+      "placebo" = "#FFBF00"
+    ))+
+  scale_x_discrete(labels = c(
+      "d1" = "Препарат 1",
+      "d2" = "Препарат 2",
+      "placebo" = "Плацебо"
+    ))  
+```
+
+
+
+```{r, fig.width=16, fig.height=12}
+(p5/p6) 
+```
+
+```{r, fig.width=12, fig.height=9}
+p7 + p8
+```
+
+```{r, fig.width=16, fig.height=12}
+p9/p10
+```
+
+
+```{r, fig.width=16, fig.height=9}
+p11
+```
+
+```{r BMI, fig.width=16, fig.height=6}
+p12 <- CrohnD %>% 
+  select(BMI) %>% 
+  ggplot() +
+  geom_bar(aes(x = BMI), fill = "#D7E8BA", width = 0.3) +
+  theme_custom+
+  #scale_x_continuous(breaks = seq(0, 120, by = 10))+
+  labs(y = "Количество пациентов", x = "ИМТ, кг/м^2", title = "Распределение по ИМТ")
+
+#выглядит не очень
+```
+
+3.  Подобрать и реализовать средства для визуальной оценки взаимосвязи между числом НЯ и собранными признаками пациентов.
+
 ```{r}
 
 ```
 
+4.  Выбрать и реализовать методы однофакторного анализа для количественной оценки взаимосвязи между числом НЯ и собранными признаками пациентов (помните, что взаимосвязь - это не только p-значения, но и доверительные интервалы!).
 
+```{r}
 
-
-
-
-
-
-
+```
