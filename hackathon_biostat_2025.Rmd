@@ -8,6 +8,7 @@ date: "2025-11-02"
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(flextable)
+library(patchwork)
 
 CrohnD <- read.csv("data/CrohnD.csv")
 ```
