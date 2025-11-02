@@ -1,0 +1,13 @@
+---
+title: "hackathon_biostat_2025"
+output: html_document
+date: "2025-11-02"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+
+CrohnD <- read.csv("data/CrohnD.csv")
+```
+
