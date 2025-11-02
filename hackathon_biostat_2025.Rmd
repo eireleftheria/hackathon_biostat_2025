@@ -9,6 +9,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(flextable)
 library(patchwork)
+library(psych)
+library(GGally)
 
 CrohnD <- read.csv("data/CrohnD.csv")
 ```
@@ -152,7 +154,6 @@ theme_custom <-
         plot.title = element_text(size=28)
   )
 ```
-
 ```{r BMI_AE,  fig.width=16, fig.height=9}
 # p1 <- CrohnD %>% 
 #   select(nrAdvE, BMI) %>% 
@@ -361,10 +362,231 @@ p12 <- CrohnD %>%
 
 ```{r}
 
+CrohnD %>% 
+  select(-rownames, -ID) %>% 
+  mutate(
+    sex = factor(sex),
+    country = factor(country),
+    treat = factor(treat)
+  ) -> corr_data
+
+ggpairs(
+  data = corr_data,
+  progress = FALSE,
+  upper = list(continuous = wrap("cor", method = "spearman"))
+) +
+  theme_bw()
+
+# пол
+p1 <- ggplot(corr_data, aes(x = sex, y = nrAdvE)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1, alpha = 0.4) +
+  theme_bw() +
+  labs(title = "Число НЯ по полу")
+
+# лечение
+p2 <- ggplot(corr_data, aes(x = treat, y = nrAdvE)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1, alpha = 0.4) +
+  theme_bw() +
+  labs(title = "Число НЯ по лечению")
+
+# страна
+p3 <- ggplot(corr_data, aes(x = country, y = nrAdvE)) +
+  geom_boxplot() +
+  geom_jitter(width = 0.1, alpha = 0.4) +
+  theme_bw() +
+  labs(title = "Число НЯ по стране")
+
+p1+p2+p3
+# num_corr <- corr_data %>%
+#   select(where(is.numeric)) %>%
+#   psych::corr.test(method = "spearman")
+# 
+# ggcorrplot(
+#   num_corr$r,
+#   hc.order = TRUE,
+#   type = "lower",
+#   p.mat = num_corr$p,
+#   sig.level = 0.05,
+#   lab = TRUE
+# )
+
+
+
+str(CrohnD)
+describe(CrohnD)
 ```
 
 4.  Выбрать и реализовать методы однофакторного анализа для количественной оценки взаимосвязи между числом НЯ и собранными признаками пациентов (помните, что взаимосвязь - это не только p-значения, но и доверительные интервалы!).
 
-```{r}
+```{r independent_ttest}
+################# Сравнение НЯ и пола ##########################
+
+# Группы: Две независимые группы (М и Ж).
+# Нулевая гипотеза (H_0): Средний уровень НЯ одинаков для обеих групп.
+
+# Проверяем, различаются ли дисперсии в распределении количества НЯ у двух групп
+CrohnD_male <- filter(CrohnD, sex == 'M')
+sd_male <- sd(CrohnD_male$nrAdvE) 
+sd_male
+
+CrohnD_female <- filter(CrohnD, sex == 'F')
+sd_female <- sd(CrohnD_female$nrAdvE) 
+sd_female
+
+# Вывод: SD  в обеих группах отличаются
+
+# Выполняем t-критерий для независимых выборок (М и Ж)
+t_test_ind <- t.test(nrAdvE ~ sex, data = CrohnD, var.equal = FALSE) # дисперсии не равны
+
+# Выводим результаты
+cat("### t-критерий для независимых выборок: НЯ по полу\n")
+print(t_test_ind)
+
+# Находим разницу средних для двух групп (М и Ж)
+
+mean_male <- mean(CrohnD_male$nrAdvE) 
+mean_female <- mean(CrohnD_female$nrAdvE) 
+md_sex =  mean_male - mean_female
+md_sex
+
+################# Сравнение НЯ и страны ##########################
+
+# Группы: Две независимые группы (c1 и c2).
+# Нулевая гипотеза (H_0): Средний уровень НЯ одинаков для обеих групп.
+
+# Проверяем, различаются ли дисперсии в распределении количества НЯ у двух групп
+CrohnD_c1 <- filter(CrohnD, country == 'c1')
+sd_c1 <- sd(CrohnD_c1$nrAdvE) 
+sd_c1
+
+CrohnD_c2 <- filter(CrohnD, country == 'c2')
+sd_c2 <- sd(CrohnD_c2$nrAdvE) 
+sd_c2
+
+# Вывод: SD  в обеих группах практически не отличаются
+
+# Выполняем t-критерий для независимых выборок (c1 и c2)
+t_test_country <- t.test(nrAdvE ~ country, data = CrohnD, var.equal = TRUE) # равенство дисперсий
+
+# Выводим результаты
+cat("### t-критерий для независимых выборок: НЯ по странам\n")
+print(t_test_country)
+
+# Находим разницу средних для двух групп (c1 и c2)
+
+mean_c1 <- mean(CrohnD_c1$nrAdvE) 
+mean_c2 <- mean(CrohnD_c2$nrAdvE) 
+md_country =  mean_c2 - mean_c1
+md_country
+
+################# Сравнение НЯ и лечения ##########################
+
+# Цель: Сравнить средний уровень НЯ между пациентами с разным лечением
+# Группы: Две независимые группы (placebo и d1).
+# Нулевая гипотеза (H_0): Средний уровень НЯ одинаков для обеих групп.
+
+# Проверяем, различаются ли дисперсии в распределении количества НЯ у двух групп
+
+CrohnD_placebo <- filter(CrohnD, treat == 'placebo')
+sd_placebo <- sd(CrohnD_placebo$nrAdvE) 
+sd_placebo
+
+CrohnD_d1 <- filter(CrohnD, treat == 'd1')
+sd_d1 <- sd(CrohnD_d1$nrAdvE) 
+sd_d1
+
+# Вывод: SD  в обеих группах отличаются
+
+placebo_d1 <- c('placebo', 'd1')
+placebo_d1=subset(CrohnD,treat %in% unique(placebo_d1)) 
+
+# Выполняем t-критерий для независимых выборок (placebo и d1)
+t_test_placebo_d1 <- t.test(nrAdvE ~ treat, data = placebo_d1, var.equal = FALSE) # дисперсии не равны
+
+# Выводим результаты
+cat("### t-критерий для независимых выборок: НЯ между placebo и d1\n")
+print(t_test_placebo_d1)
+
+# Находим разницу средних для двух групп (placebo и d1)
+
+mean_placebo <- mean(CrohnD_placebo$nrAdvE) 
+mean_d1 <- mean(CrohnD_d1$nrAdvE) 
+md_placebo_d1 =  mean_placebo - mean_d1
+md_placebo_d1
+
+# Цель: Сравнить средний уровень НЯ между пациентами с разным лечением
+# Группы: Две независимые группы (placebo и d2).
+# Нулевая гипотеза (H_0): Средний уровень НЯ одинаков для обеих групп.
+
+# Проверяем, различаются ли дисперсии в распределении количества НЯ у двух групп
+
+sd_placebo
+
+CrohnD_d2 <- filter(CrohnD, treat == 'd2')
+sd_d2 <- sd(CrohnD_d2$nrAdvE) 
+sd_d2
+
+# Вывод: SD  в обеих группах отличаются
+
+placebo_d2 <- c('placebo', 'd2')
+placebo_d2=subset(CrohnD,treat %in% unique(placebo_d2)) 
+
+# Выполняем t-критерий для независимых выборок (placebo и d1)
+t_test_placebo_d2 <- t.test(nrAdvE ~ treat, data = placebo_d2, var.equal = FALSE) # дисперсии не равны
+
+# Выводим результаты
+cat("### t-критерий для независимых выборок: НЯ между placebo и d1\n")
+print(t_test_placebo_d2)
+
+# Находим разницу средних для двух групп (placebo и d2)
+
+mean_d2 <- mean(CrohnD_d2$nrAdvE) 
+md_placebo_d2 =  mean_placebo - mean_d2
+md_placebo_d2
+
+# Цель: Сравнить средний уровень НЯ между пациентами с разным лечением
+# Группы: Две независимые группы (d1 и d2).
+# Нулевая гипотеза (H_0): Средний уровень НЯ одинаков для обеих групп.
+
+# Проверяем, различаются ли дисперсии в распределении количества НЯ у двух групп
+
+sd_d1
+sd_d2
+
+# Вывод: SD  в обеих группах практически не отличаются
+
+d1_d2 <- c('d1', 'd2')
+d1_d2=subset(CrohnD,treat %in% unique(d1_d2)) 
+
+# Выполняем t-критерий для независимых выборок (placebo и d1)
+t_test_d1_d2 <- t.test(nrAdvE ~ treat, data = d1_d2, var.equal = TRUE) # дисперсии равны
+
+# Выводим результаты
+cat("### t-критерий для независимых выборок: НЯ между placebo и d1\n")
+print(t_test_d1_d2)
+
+# Находим разницу средних для двух групп (placebo и d2)
+
+md_d1_d2 =  mean_d1 - mean_d2
+md_d1_d2
 
 ```
+## Интерпретация результатов
+
+1. **Статистическая значимость**: p-value = 0.3207 > 0,05 свидетельствует о статистически незначимом различии между группами, разделенными по полу, стране и терапии.
+
+2. **Разность средних**: -0.5641026 (нет существенных различий в количестве НЯ между группами)
+
+3. **t-статистика**: около t = -0.99962 (отрицательное значение указывает на то, что первая группа 'd1' имеет меньшее среднее значение, чем вторая группа 'd2')
+
+4. **Степени свободы**: df = 76 (размер выборки с терапией d1 или d2)
+
+5. **Доверительный интервал**: 95% доверительный интервал для разности средних составляет [-1.6880377  0.5598326], что означает, что мы можем быть на 95% уверены, что истинная разность между группами находится в этом интервале.
+
+6. **Клиническая значимость**: Разность в ~0.6  является **клинически не значимой**
+
+**Заключение**: Не найдено статистически и клинически значимых различий в количестве НЯ после лечения болезни Крона между пациентами с терапией d1 и d2.
+
+Приблизительно такие же результаты были получены при сравнении групп М и Ж, страна 1 и страна 2, placebo И d1, placebo и d2.
