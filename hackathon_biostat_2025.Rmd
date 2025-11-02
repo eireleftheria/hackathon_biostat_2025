@@ -7,14 +7,102 @@ date: "2025-11-02"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
+library(flextable)
 
 CrohnD <- read.csv("data/CrohnD.csv")
 ```
 
 1. Сформировать таблицы с базовыми описательными статистиками.
+
+Количественные переменные
 ```{r}
 
+final_table <- CrohnD %>% 
+  summarise(
+    .by = treat,
+    across(where(is.numeric) & !c(rownames, ID), 
+           list(
+             N = ~sum(!is.na(.x)) %>% as.character(),
+             Пропущено = ~sum(is.na(.x)) %>% as.character(),
+             Среднее = ~ifelse(sum(!is.na(.x)) == 0, "Н/Д", round(mean(.x, na.rm = TRUE), 2) %>% as.character()),
+             `Ст. отклон.` = ~ifelse(sum(!is.na(.x)) < 2, "Н/Д", round(sd(.x, na.rm = TRUE), 2) %>% as.character()),
+             `Мин - Макс` = ~ifelse(sum(!is.na(.x)) == 0, "Н/Д", paste0(round(min(.x, na.rm = TRUE), 2), " - ", round(max(.x, na.rm = TRUE), 2))),
+             Медиана = ~ifelse(sum(!is.na(.x)) == 0, "Н/Д", round(median(.x, na.rm = TRUE), 2) %>% as.character()),
+             `Q1 - Q3` = ~ifelse(sum(!is.na(.x)) == 0, "Н/Д", paste0(round(quantile(.x, 0.25, na.rm = TRUE), 2), " - ", round(quantile(.x, 0.75, na.rm = TRUE), 2)))
+           )
+    )
+  ) %>% 
+  pivot_longer(!treat, names_to = c("Переменная", "Статистика"), names_sep = "_") %>% 
+  pivot_wider(names_from = "Статистика", values_from = "value")
+
+ft <- flextable(final_table) %>%
+  merge_v(j = "treat") %>%
+  fontsize(size = 9) %>%
+  bold(part = "header") %>%
+  align(align = "center", part = "header") %>%
+  align(align = "center", part = "body") %>%
+  align(j = "Переменная", align = "left") %>%
+  theme_vanilla() %>%
+  border_outer() %>%
+  border_inner_h() %>%
+  set_table_properties(layout = "autofit") %>%
+  set_caption("Описательная статистика по группам лечения") %>%
+  bg(part = "header", bg = "#E6E6E6")
+
+ft
 ```
+
+Категориальные переменные
+
+```{r}
+
+cat_table_simple <- CrohnD %>% 
+  summarise(
+    .by = treat,
+    across(c(country, sex), 
+           list(
+             N = ~sum(!is.na(.x)) %>% as.character(),
+             Пропущено = ~sum(is.na(.x)) %>% as.character(),
+             c1 = ~sum(.x == "c1", na.rm = TRUE) %>% as.character(),
+             `c1, %` = ~ifelse(sum(!is.na(.x)) == 0, "Н/Д", 
+                             round(sum(.x == "c1", na.rm = TRUE) / sum(!is.na(.x)) * 100, 1) %>% paste0("%")),
+             c2 = ~sum(.x == "c2", na.rm = TRUE) %>% as.character(),
+             `c2, %` = ~ifelse(sum(!is.na(.x)) == 0, "Н/Д", 
+                             round(sum(.x == "c2", na.rm = TRUE) / sum(!is.na(.x)) * 100, 1) %>% paste0("%"))
+           )
+    ),
+    across(c(sex), 
+           list(
+             F = ~sum(.x == "F", na.rm = TRUE) %>% as.character(),
+             `F, %` = ~ifelse(sum(!is.na(.x)) == 0, "Н/Д", 
+                            round(sum(.x == "F", na.rm = TRUE) / sum(!is.na(.x)) * 100, 1) %>% paste0("%")),
+             M = ~sum(.x == "M", na.rm = TRUE) %>% as.character(),
+             `M, %` = ~ifelse(sum(!is.na(.x)) == 0, "Н/Д", 
+                            round(sum(.x == "M", na.rm = TRUE) / sum(!is.na(.x)) * 100, 1) %>% paste0("%"))
+           )
+    )
+  ) %>% 
+  pivot_longer(!treat, names_to = c("Переменная", "Статистика"), names_sep = "_") %>% 
+  pivot_wider(names_from = "Статистика", values_from = "value")
+
+
+ft_cat_simple <- flextable(cat_table_simple) %>%
+  merge_v(j = "treat") %>%
+  fontsize(size = 9) %>%
+  bold(part = "header") %>%
+  align(align = "center", part = "header") %>%
+  align(align = "center", part = "body") %>%
+  align(j = "Переменная", align = "left") %>%
+  theme_vanilla() %>%
+  border_outer() %>%
+  border_inner_h() %>%
+  set_table_properties(layout = "autofit") %>%
+  set_caption("Описательная статистика категориальных переменных по группам лечения") %>%
+  bg(part = "header", bg = "#E6E6E6")
+
+ft_cat_simple
+```
+
 
 2. Визуализировать распределения значений признаков средствами ggplot2 и сопутствующих пакетов.
 ```{r}
