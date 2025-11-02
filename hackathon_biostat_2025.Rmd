@@ -136,6 +136,9 @@ ft_cat
 
 
 2. Визуализировать распределения значений признаков средствами ggplot2 и сопутствующих пакетов.
+
+### Настройка темы
+
 ```{r}
 theme_custom <-
   theme(
@@ -218,6 +221,8 @@ theme_custom <-
 #(p1+p2)/(p3+p4)
 ```
 
+### Распределение значений признаков
+
 ```{r hist_AE, fig.width=16, fig.height=6}
 p5 <- CrohnD %>% 
   select(nrAdvE) %>% 
@@ -297,6 +302,18 @@ p10 <- CrohnD %>%
   labs(y = "Количество пациентов", x = "Вес, кг", title = "Распределение по весу")
 ```
 
+```{r, fig.width=16, fig.height=12}
+(p5/p6) 
+```
+
+```{r, fig.width=12, fig.height=9}
+p7 + p8
+```
+
+```{r, fig.width=16, fig.height=12}
+p9/p10
+```
+
 ```{r, fig.width=16, fig.height=9}
 p11 <- CrohnD %>% 
   select(treat) %>% 
@@ -323,21 +340,6 @@ p11 <- CrohnD %>%
       "placebo" = "Плацебо"
     ))  
 ```
-
-
-
-```{r, fig.width=16, fig.height=12}
-(p5/p6) 
-```
-
-```{r, fig.width=12, fig.height=9}
-p7 + p8
-```
-
-```{r, fig.width=16, fig.height=12}
-p9/p10
-```
-
 
 ```{r, fig.width=16, fig.height=9}
 p11
