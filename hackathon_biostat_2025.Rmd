@@ -146,7 +146,7 @@ ft_cat
 
 ### Настройка темы
 
-```{r}
+```{r, echo=FALSE}
 theme_custom <-
   theme(
         axis.text.x = element_text(size = 20),
@@ -159,7 +159,8 @@ theme_custom <-
         plot.title = element_text(size=28)
   )
 ```
-```{r BMI_AE,  fig.width=16, fig.height=9}
+
+```{r BMI_AE,  fig.width=16, fig.height=9, echo=FALSE}
 # p1 <- CrohnD %>% 
 #   select(nrAdvE, BMI) %>% 
 #   ggplot(aes(x = BMI, y = nrAdvE)) +
@@ -169,7 +170,7 @@ theme_custom <-
 #   scale_color_continuous(name="ИМТ")
 ```
 
-```{r height_AE,  fig.width=16, fig.height=9}
+```{r height_AE,  fig.width=16, fig.height=9, echo=FALSE}
 # p2 <- CrohnD %>% 
 #   select(nrAdvE, height) %>% 
 #   ggplot(aes(x = height, y = nrAdvE)) +
@@ -179,7 +180,7 @@ theme_custom <-
 #   scale_color_continuous(name="Рост, см")
 ```
 
-```{r country_AE,  fig.width=16, fig.height=9}
+```{r country_AE,  fig.width=16, fig.height=9, echo=FALSE}
 # p3 <- CrohnD %>% 
 #   select(nrAdvE, country) %>% 
 #   ggplot() +
@@ -198,7 +199,7 @@ theme_custom <-
 #     ))
 ```
 
-```{r, fig.width=12, fig.height=9}
+```{r, fig.width=12, fig.height=9, echo=FALSE}
 # p4 <- CrohnD %>% 
 #   select(nrAdvE, sex) %>% 
 #   ggplot() +
@@ -223,13 +224,13 @@ theme_custom <-
 #   #scale_color_continuous(name="ИМТ")
 ```
 
-```{r, fig.width=16, fig.height=12}
+```{r, fig.width=16, fig.height=12, echo=FALSE}
 #(p1+p2)/(p3+p4)
 ```
 
 ### Распределение значений признаков
 
-```{r hist_AE, fig.width=16, fig.height=6}
+```{r hist_AE, fig.width=16, fig.height=6, echo=FALSE}
 p5 <- CrohnD %>% 
   select(nrAdvE) %>% 
   ggplot() +
@@ -238,7 +239,7 @@ p5 <- CrohnD %>%
   labs(y = "Количество пациентов", x = "Количество НЯ", title = "Распределение количества НЯ")
 ```
 
-```{r hist_height, fig.width=16, fig.height=6}
+```{r hist_height, fig.width=16, fig.height=6, echo=FALSE}
 p6 <- CrohnD %>% 
   select(height) %>% 
   ggplot() +
@@ -249,7 +250,7 @@ p6 <- CrohnD %>%
   labs(y = "Количество пациентов", x = "Рост, см", title = "Распределение по росту")
 ```
 
-```{r hist_country, fig.width=6, fig.height=12}
+```{r hist_country, fig.width=6, fig.height=12, echo=FALSE}
 p7 <- CrohnD %>% 
   select(country) %>% 
   ggplot() +
@@ -263,7 +264,7 @@ p7 <- CrohnD %>%
     ))
 ```
 
-```{r hist_sex, fig.width=6, fig.height=12}
+```{r hist_sex, fig.width=6, fig.height=12, echo=FALSE}
 p8 <- CrohnD %>% 
   select(sex) %>% 
   ggplot() +
@@ -287,7 +288,7 @@ p8 <- CrohnD %>%
     ))  
 ```
 
-```{r hist_age, fig.width=16, fig.height=6}
+```{r hist_age, fig.width=16, fig.height=6, echo=FALSE}
 p9 <- CrohnD %>% 
   select(age) %>% 
   ggplot() +
@@ -298,7 +299,7 @@ p9 <- CrohnD %>%
   labs(y = "Количество пациентов", x = "Возраст, лет", title = "Распределение по возрасту")
 ```
 
-```{r hist_weight, fig.width=16, fig.height=6}
+```{r hist_weight, fig.width=16, fig.height=6, echo=FALSE}
 p10 <- CrohnD %>% 
   select(weight) %>% 
   ggplot() +
@@ -308,19 +309,19 @@ p10 <- CrohnD %>%
   labs(y = "Количество пациентов", x = "Вес, кг", title = "Распределение по весу")
 ```
 
-```{r, fig.width=16, fig.height=12}
+```{r, fig.width=16, fig.height=12, echo=FALSE}
 (p5/p6) 
 ```
 
-```{r, fig.width=12, fig.height=9}
+```{r, fig.width=12, fig.height=9, echo=FALSE}
 p7 + p8
 ```
 
-```{r, fig.width=16, fig.height=12}
+```{r, fig.width=16, fig.height=12, echo=FALSE}
 p9/p10
 ```
 
-```{r, fig.width=16, fig.height=9}
+```{r, fig.width=16, fig.height=9, echo=FALSE}
 p11 <- CrohnD %>% 
   select(treat) %>% 
   ggplot() +
@@ -347,25 +348,25 @@ p11 <- CrohnD %>%
     ))  
 ```
 
-```{r, fig.width=16, fig.height=9}
+```{r, fig.width=16, fig.height=9, echo=FALSE}
 p11
 ```
 
-```{r BMI, fig.width=16, fig.height=6}
+```{r BMI, fig.width=16, fig.height=6, echo=FALSE}
 p12 <- CrohnD %>% 
   select(BMI) %>% 
   ggplot() +
-  geom_bar(aes(x = BMI), fill = "#D7E8BA", width = 0.3) +
+  geom_density(aes(x = BMI), fill = "#D7E8BA") +
   theme_custom+
   #scale_x_continuous(breaks = seq(0, 120, by = 10))+
-  labs(y = "Количество пациентов", x = "ИМТ, кг/м^2", title = "Распределение по ИМТ")
+  labs(y = "Доля пациентов", x = "ИМТ, кг/м^2", title = "Распределение по ИМТ")
 
-#выглядит не очень
+p12
 ```
 
 3.  Подобрать и реализовать средства для визуальной оценки взаимосвязи между числом НЯ и собранными признаками пациентов.
 
-```{r}
+```{r, fig.height=13, fig.width=13, error=FALSE, warning=FALSE, message=FALSE, echo=FALSE}
 
 CrohnD %>% 
   select(-rownames, -ID) %>% 
@@ -375,12 +376,12 @@ CrohnD %>%
     treat = factor(treat)
   ) -> corr_data
 
-pm<-  ggpairs(
-  data = corr_data,
-  progress = FALSE,
-  upper = list(continuous = wrap("cor", method = "spearman"))
-) + 
-  theme_bw()
+# pm<-  ggpairs(
+#   data = corr_data,
+#   progress = FALSE,
+#   upper = list(continuous = wrap("cor", method = "spearman"))
+# ) + 
+#   theme_bw()
 
 pm_sex<-  ggpairs(
   data = corr_data,
@@ -397,34 +398,34 @@ pm_sex<-  ggpairs(
 
 # pm <- ggpairs(corr_data, columns = c(1, 2, 4 ,5, 6,8))
 
-# пол
-p1 <- ggplot(corr_data, aes(x = sex, y = nrAdvE)) +
-  geom_boxplot() +
-  geom_jitter(width = 0.1, alpha = 0.4) +
-  theme_bw() +
-  labs(title = "Число НЯ по полу")
+# # пол
+# p1 <- ggplot(corr_data, aes(x = sex, y = nrAdvE)) +
+#   geom_boxplot() +
+#   geom_jitter(width = 0.1, alpha = 0.4) +
+#   theme_bw() +
+#   labs(title = "Число НЯ по полу")
+# 
+# # лечение
+# p2 <- ggplot(corr_data, aes(x = treat, y = nrAdvE)) +
+#   geom_boxplot() +
+#   geom_jitter(width = 0.1, alpha = 0.4) +
+#   theme_bw() +
+#   labs(title = "Число НЯ по лечению")
+# 
+# # страна
+# p3 <- ggplot(corr_data, aes(x = country, y = nrAdvE)) +
+#   geom_boxplot() +
+#   geom_jitter(width = 0.1, alpha = 0.4) +
+#   theme_bw() +
+#   labs(title = "Число НЯ по стране")
+# 
+# p1+p2+p3
+# num_corr <- corr_data %>%
+#   select(where(is.numeric)) %>%
+#   group_by(sex) %>% 
+#   psych::corr.test(method = "spearman")
 
-# лечение
-p2 <- ggplot(corr_data, aes(x = treat, y = nrAdvE)) +
-  geom_boxplot() +
-  geom_jitter(width = 0.1, alpha = 0.4) +
-  theme_bw() +
-  labs(title = "Число НЯ по лечению")
 
-# страна
-p3 <- ggplot(corr_data, aes(x = country, y = nrAdvE)) +
-  geom_boxplot() +
-  geom_jitter(width = 0.1, alpha = 0.4) +
-  theme_bw() +
-  labs(title = "Число НЯ по стране")
-
-p1+p2+p3
-num_corr <- corr_data %>%
-  select(where(is.numeric)) %>%
-  group_by(sex) %>% 
-  psych::corr.test(method = "spearman")
-
-pm
 pm_sex
 
 
